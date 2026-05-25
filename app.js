@@ -70,7 +70,7 @@ export async function signOut() {
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
-    document.getElementById('user-info').innerHTML = `<span title="PC 동기화 ID: ${user.uid}" style="cursor:pointer;text-decoration:underline dotted" onclick="navigator.clipboard.writeText('${user.uid}').then(()=>alert('PC 동기화 ID 복사완료!\nPC앱에서 클라우드 동기화 버튼 누르고 붙여넣기 하세요.'))">${user.displayName || user.email} 🔗</span>`;
+    document.getElementById('user-info').textContent = user.displayName || user.email;
     document.getElementById('page-login').classList.remove('active');
     document.getElementById('page-today').classList.add('active');
     await loadFromFirebase();
