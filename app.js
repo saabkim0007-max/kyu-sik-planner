@@ -2,7 +2,8 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebas
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
-// ?끸쁾???ш린??Firebase ?ㅼ젙???낅젰?섏꽭???끸쁾??const firebaseConfig = {
+// ★★★ 여기에 Firebase 설정을 입력하세요 ★★★
+const firebaseConfig = {
   apiKey: "AIzaSyCn54iAiLh7FEirtptogba5SUQkfTquYrE",
   authDomain: "kyu-sik-s-planner.firebaseapp.com",
   projectId: "kyu-sik-s-planner",
@@ -21,21 +22,21 @@ let unsubscribe = null;
 
 const DEFAULT_DATA = {
   tasks: [
-    {id:1,name:'湲곗긽 諛?臾?????,time:'06:00',period:'morning',done:false,cat:'嫄닿컯',memo:''},
-    {id:2,name:'紐낆긽 10遺?,time:'06:10',period:'morning',done:false,cat:'?먭린怨꾨컻',memo:''},
-    {id:3,name:'?ㅽ듃?덉묶 15遺?,time:'06:30',period:'morning',done:false,cat:'嫄닿컯',memo:''},
-    {id:4,name:'?곸뼱 ?⑥뼱 20媛?,time:'07:00',period:'morning',done:false,cat:'?숈뒿',memo:'?⑥뼱?????쒖슜'},
-    {id:5,name:'?낅Т ?곗꽑?쒖쐞 ?뺣━',time:'09:00',period:'daytime',done:false,cat:'?낅Т',memo:''},
-    {id:6,name:'?먯떖 ??10遺??곗콉',time:'13:00',period:'daytime',done:false,cat:'嫄닿컯',memo:''},
-    {id:7,name:'?낆꽌 30遺?,time:'20:00',period:'evening',done:false,cat:'?숈뒿',memo:''},
-    {id:8,name:'?쇨린 ?곌린',time:'22:00',period:'evening',done:false,cat:'?먭린怨꾨컻',memo:'媛먯궗????3媛吏'},
+    {id:1,name:'기상 및 물 한 잔',time:'06:00',period:'morning',done:false,cat:'건강',memo:''},
+    {id:2,name:'명상 10분',time:'06:10',period:'morning',done:false,cat:'자기계발',memo:''},
+    {id:3,name:'스트레칭 15분',time:'06:30',period:'morning',done:false,cat:'건강',memo:''},
+    {id:4,name:'영어 단어 20개',time:'07:00',period:'morning',done:false,cat:'학습',memo:'단어장 앱 활용'},
+    {id:5,name:'업무 우선순위 정리',time:'09:00',period:'daytime',done:false,cat:'업무',memo:''},
+    {id:6,name:'점심 후 10분 산책',time:'13:00',period:'daytime',done:false,cat:'건강',memo:''},
+    {id:7,name:'독서 30분',time:'20:00',period:'evening',done:false,cat:'학습',memo:''},
+    {id:8,name:'일기 쓰기',time:'22:00',period:'evening',done:false,cat:'자기계발',memo:'감사한 일 3가지'},
   ],
   goals: [
-    {id:1,name:'?섎（ 臾?2L 留덉떆湲?,period:'daily',target:2,current:0,unit:'L',cat:'嫄닿컯',deadline:'留ㅼ씪'},
-    {id:2,name:'二?5???대룞',period:'weekly',target:5,current:3,unit:'??,cat:'嫄닿컯',deadline:''},
-    {id:3,name:'?곸뼱 梨?3沅??쎄린',period:'monthly',target:3,current:1,unit:'沅?,cat:'?숈뒿',deadline:''},
-    {id:4,name:'鍮꾩긽湲?200留뚯썝 紐⑥쑝湲?,period:'quarterly',target:200,current:76,unit:'留뚯썝',cat:'?ъ젙',deadline:''},
-    {id:5,name:'?먭꺽利?2媛?痍⑤뱷',period:'yearly',target:2,current:0,unit:'媛?,cat:'?먭린怨꾨컻',deadline:''},
+    {id:1,name:'하루 물 2L 마시기',period:'daily',target:2,current:0,unit:'L',cat:'건강',deadline:'매일'},
+    {id:2,name:'주 5회 운동',period:'weekly',target:5,current:3,unit:'회',cat:'건강',deadline:''},
+    {id:3,name:'영어 책 3권 읽기',period:'monthly',target:3,current:1,unit:'권',cat:'학습',deadline:''},
+    {id:4,name:'비상금 200만원 모으기',period:'quarterly',target:200,current:76,unit:'만원',cat:'재정',deadline:''},
+    {id:5,name:'자격증 2개 취득',period:'yearly',target:2,current:0,unit:'개',cat:'자기계발',deadline:''},
   ],
   alerts: [],
   streak: 0,
@@ -51,13 +52,13 @@ let progressTargetId = null;
 let editTaskId = null;
 let editGoalId = null;
 
-// ?? ?몄쬆 ??
+// ── 인증 ──
 export async function signInWithGoogle() {
   const provider = new GoogleAuthProvider();
   try {
     await signInWithPopup(auth, provider);
   } catch(e) {
-    alert('濡쒓렇???ㅽ뙣: ' + e.message);
+    alert('로그인 실패: ' + e.message);
   }
 }
 
@@ -69,7 +70,7 @@ export async function signOut() {
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
-    document.getElementById('user-info').textContent = user.displayName || user.email;
+    document.getElementById('user-info').innerHTML = `<span title="PC 동기화 ID: ${user.uid}" style="cursor:pointer;text-decoration:underline dotted" onclick="navigator.clipboard.writeText('${user.uid}').then(()=>alert('PC 동기화 ID 복사완료!\nPC앱에서 클라우드 동기화 버튼 누르고 붙여넣기 하세요.'))">${user.displayName || user.email} 🔗</span>`;
     document.getElementById('page-login').classList.remove('active');
     document.getElementById('page-today').classList.add('active');
     await loadFromFirebase();
@@ -127,10 +128,10 @@ async function saveData() {
   const ref = doc(db, 'users', currentUser.uid);
   await setDoc(ref, state);
   const el = document.getElementById('save-status');
-  if (el) { el.textContent = '??λ맖 ??; setTimeout(() => el.textContent = '', 2000); }
+  if (el) { el.textContent = '저장됨 ✓'; setTimeout(() => el.textContent = '', 2000); }
 }
 
-// ?? ?대깽????
+// ── 이벤트 ──
 function setupEvents() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
@@ -166,9 +167,9 @@ function switchTab(tab) {
 
 function renderAll() {
   const now = new Date();
-  const days = ['??,'??,'??,'??,'紐?,'湲?,'??];
+  const days = ['일','월','화','수','목','금','토'];
   const el = document.getElementById('today-date');
-  if (el) el.textContent = now.getFullYear()+'??'+(now.getMonth()+1)+'??'+now.getDate()+'??'+days[now.getDay()]+'?붿씪';
+  if (el) el.textContent = now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일 '+days[now.getDay()]+'요일';
   renderWeekGrid();
   renderRoutineSections();
   updateSidebar();
@@ -181,7 +182,7 @@ function renderWeekGrid() {
   const now = new Date();
   const monday = new Date(now);
   monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-  const dayNames = ['??,'??,'??,'紐?,'湲?,'??,'??];
+  const dayNames = ['월','화','수','목','금','토','일'];
   let html = '';
   for (let i = 0; i < 7; i++) {
     const d = new Date(monday);
@@ -199,18 +200,18 @@ function renderRoutineSections() {
   if (!el) return;
   const periods = currentFilter === 'all' ? ['morning','daytime','evening'] : [currentFilter];
   const info = {
-    morning:{label:'?꾩묠 猷⑦떞',icon:'ti-sunrise',badgeClass:'blue',time:'06:00-09:00'},
-    daytime:{label:'??猷⑦떞',icon:'ti-sun',badgeClass:'amber',time:'09:00-18:00'},
-    evening:{label:'???猷⑦떞',icon:'ti-moon',badgeClass:'purple',time:'18:00-23:00'},
+    morning:{label:'아침 루틴',icon:'ti-sunrise',badgeClass:'blue',time:'06:00-09:00'},
+    daytime:{label:'낮 루틴',icon:'ti-sun',badgeClass:'amber',time:'09:00-18:00'},
+    evening:{label:'저녁 루틴',icon:'ti-moon',badgeClass:'purple',time:'18:00-23:00'},
   };
-  const catColor = {嫄닿컯:'green',?숈뒿:'blue',?ъ젙:'amber',愿怨?'coral',?먭린怨꾨컻:'purple',?낅Т:'teal',媛먯궗???'pink'};
+  const catColor = {건강:'green',학습:'blue',재정:'amber',관계:'coral',자기계발:'purple',업무:'teal',감사은혜:'pink'};
   let html = '';
   periods.forEach(p => {
     const pi = info[p];
     const tasks = state.tasks.filter(t => t.period === p).sort((a,b) => a.time.localeCompare(b.time));
     html += '<div class="section-title"><i class="ti '+pi.icon+'"></i> '+pi.label+' <span class="badge '+pi.badgeClass+'">'+pi.time+'</span></div>';
     if (!tasks.length) {
-      html += '<div style="font-size:13px;color:var(--t3);padding:12px 0;text-align:center">???쒓컙???猷⑦떞???놁뒿?덈떎</div>';
+      html += '<div style="font-size:13px;color:var(--t3);padding:12px 0;text-align:center">이 시간대에 루틴이 없습니다</div>';
     } else {
       tasks.forEach(t => {
         const cc = catColor[t.cat] || 'blue';
@@ -241,7 +242,7 @@ window.toggleTask = function(id) {
 };
 
 window.deleteTask = function(id) {
-  if (!confirm('??猷⑦떞????젣?좉퉴??')) return;
+  if (!confirm('이 루틴을 삭제할까요?')) return;
   state.tasks = state.tasks.filter(t => t.id !== id);
   saveData(); renderRoutineSections();
 };
@@ -276,7 +277,7 @@ window.saveEditTask = function() {
 };
 
 window.deleteTaskFromEdit = function() {
-  if (!editTaskId || !confirm('??젣?좉퉴??')) return;
+  if (!editTaskId || !confirm('삭제할까요?')) return;
   state.tasks = state.tasks.filter(t => t.id !== editTaskId);
   saveData(); closeModal('edit-task'); renderRoutineSections();
 };
@@ -289,7 +290,7 @@ function getCompletionPct() {
 function updateProgress() {
   const done = state.tasks.filter(t => t.done).length;
   const el = document.getElementById('done-count');
-  if (el) el.textContent = done+'/'+state.tasks.length+' ?꾨즺';
+  if (el) el.textContent = done+'/'+state.tasks.length+' 완료';
   updateSidebar();
 }
 
@@ -297,10 +298,10 @@ function updateSidebar() {
   const pct = getCompletionPct();
   const p = document.getElementById('sb-pct'); if (p) p.textContent = pct+'%';
   const b = document.getElementById('sb-bar'); if (b) b.style.width = pct+'%';
-  const s = document.getElementById('sb-streak'); if (s) s.textContent = (state.streak||0)+'??;
+  const s = document.getElementById('sb-streak'); if (s) s.textContent = (state.streak||0)+'일';
 }
 
-// ?? 紐⑺몴 ??
+// ── 목표 ──
 function setPeriod(p) {
   currentPeriod = p;
   document.querySelectorAll('.period-tag').forEach(tag => tag.classList.toggle('active', tag.dataset.period === p));
@@ -311,11 +312,11 @@ function renderGoals() {
   const el = document.getElementById('goals-list');
   if (!el) return;
   const filtered = currentPeriod === 'all' ? state.goals : state.goals.filter(g => g.period === currentPeriod);
-  const pl = {daily:'?쇨컙',weekly:'二쇨컙',monthly:'?붽컙',quarterly:'遺꾧린',yearly:'?곌컙'};
+  const pl = {daily:'일간',weekly:'주간',monthly:'월간',quarterly:'분기',yearly:'연간'};
   const pc = {daily:'blue',weekly:'teal',monthly:'purple',quarterly:'amber',yearly:'coral'};
   const cf = {blue:'var(--blue)',teal:'var(--teal)',purple:'var(--purple)',amber:'var(--amber)',coral:'var(--coral)'};
   if (!filtered.length) {
-    el.innerHTML = '<div style="text-align:center;color:var(--t3);padding:40px;font-size:13px">紐⑺몴媛 ?놁뒿?덈떎<br><button class="btn-primary" style="margin-top:12px" onclick="openModal(\'goal\')">紐⑺몴 異붽?</button></div>';
+    el.innerHTML = '<div style="text-align:center;color:var(--t3);padding:40px;font-size:13px">목표가 없습니다<br><button class="btn-primary" style="margin-top:12px" onclick="openModal(\'goal\')">목표 추가</button></div>';
     return;
   }
   el.innerHTML = filtered.map(g => {
@@ -325,17 +326,17 @@ function renderGoals() {
     return '<div class="goal-row">'
       +'<div class="goal-header"><div style="flex:1;min-width:0"><span class="badge '+col+'" style="margin-bottom:4px;display:inline-flex">'+pl[g.period]+'</span><div class="goal-name">'+g.name+'</div></div>'
       +'<div class="goal-actions"><span style="font-size:14px;font-weight:500;color:'+pctCol+'">'+pct+'%</span>'
-      +'<button class="btn-icon" onclick="openProgress('+g.id+')" title="?낅뜲?댄듃"><i class="ti ti-edit" style="font-size:14px"></i></button>'
-      +'<button class="btn-icon" onclick="deleteGoal('+g.id+')" title="??젣"><i class="ti ti-trash" style="font-size:14px"></i></button>'
+      +'<button class="btn-icon" onclick="openProgress('+g.id+')" title="업데이트"><i class="ti ti-edit" style="font-size:14px"></i></button>'
+      +'<button class="btn-icon" onclick="deleteGoal('+g.id+')" title="삭제"><i class="ti ti-trash" style="font-size:14px"></i></button>'
       +'</div></div>'
-      +'<div class="goal-sub">'+g.current+' / '+g.target+g.unit+(g.deadline?' 쨌 '+g.deadline:'')+'</div>'
+      +'<div class="goal-sub">'+g.current+' / '+g.target+g.unit+(g.deadline?' · '+g.deadline:'')+'</div>'
       +'<div class="progress-bar" style="height:6px"><div class="progress-fill" style="width:'+pct+'%;background:'+cf[col]+'"></div></div>'
       +'</div>';
   }).join('');
 }
 
 window.deleteGoal = function(id) {
-  if (!confirm('??紐⑺몴瑜???젣?좉퉴??')) return;
+  if (!confirm('이 목표를 삭제할까요?')) return;
   state.goals = state.goals.filter(g => g.id !== id);
   saveData(); renderGoals();
 };
@@ -344,14 +345,14 @@ function renderTimeline() {
   const el = document.getElementById('timeline-list');
   if (!el) return;
   const sorted = state.tasks.slice().sort((a,b) => a.time.localeCompare(b.time));
-  const catColor = {嫄닿컯:'green',?숈뒿:'blue',?ъ젙:'amber',愿怨?'coral',?먭린怨꾨컻:'purple',?낅Т:'teal',媛먯궗???'pink'};
-  const pk = {morning:'?꾩묠',daytime:'??,evening:'???};
-  el.innerHTML = !sorted.length ? '<div style="text-align:center;color:var(--t3);padding:40px">?깅줉??猷⑦떞???놁뒿?덈떎</div>'
+  const catColor = {건강:'green',학습:'blue',재정:'amber',관계:'coral',자기계발:'purple',업무:'teal',감사은혜:'pink'};
+  const pk = {morning:'아침',daytime:'낮',evening:'저녁'};
+  el.innerHTML = !sorted.length ? '<div style="text-align:center;color:var(--t3);padding:40px">등록된 루틴이 없습니다</div>'
     : sorted.map((t,i) => '<div class="timeline-block">'
         +'<div class="tl-time">'+t.time+'</div>'
         +'<div class="tl-dot-col"><div class="tl-dot '+(t.done?'done':'')+'"></div>'+(i<sorted.length-1?'<div class="tl-line"></div>':'')+'</div>'
-        +'<div class="tl-card"><div class="tl-card-title">'+t.name+(t.done?' <span style="color:var(--green);font-size:11px">?꾨즺</span>':'')+'</div>'
-        +'<div class="tl-card-sub"><span class="badge '+(catColor[t.cat]||'blue')+'" style="font-size:10px;padding:1px 6px">'+t.cat+'</span> 쨌 '+pk[t.period]+(t.memo?' 쨌 '+t.memo:'')+'</div></div></div>'
+        +'<div class="tl-card"><div class="tl-card-title">'+t.name+(t.done?' <span style="color:var(--green);font-size:11px">완료</span>':'')+'</div>'
+        +'<div class="tl-card-sub"><span class="badge '+(catColor[t.cat]||'blue')+'" style="font-size:10px;padding:1px 6px">'+t.cat+'</span> · '+pk[t.period]+(t.memo?' · '+t.memo:'')+'</div></div></div>'
       ).join('');
 }
 
@@ -362,24 +363,24 @@ function renderStats() {
   const weekAvg = wv.length ? Math.round(wv.reduce((a,b)=>a+b,0)/wv.length) : 0;
   const el = document.getElementById('stat-metrics');
   if (el) el.innerHTML = [
-    {label:'?ㅻ뒛 ?ъ꽦瑜?,val:todayPct+'%'},
-    {label:'二쇨컙 ?됯퇏',val:weekAvg+'%'},
+    {label:'오늘 달성률',val:todayPct+'%'},
+    {label:'주간 평균',val:weekAvg+'%'},
   ].map(m => '<div class="metric"><div class="metric-label">'+m.label+'</div><div class="metric-val">'+m.val+'</div></div>').join('');
-  const cats = ['嫄닿컯','?숈뒿','?ъ젙','?먭린怨꾨컻','?낅Т','媛먯궗???];
-  const catFills = {嫄닿컯:'var(--green)',?숈뒿:'var(--blue)',?ъ젙:'var(--amber)',?먭린怨꾨컻:'var(--purple)',?낅Т:'var(--teal)',媛먯궗???'var(--pink)'};
+  const cats = ['건강','학습','재정','자기계발','업무','감사은혜'];
+  const catFills = {건강:'var(--green)',학습:'var(--blue)',재정:'var(--amber)',자기계발:'var(--purple)',업무:'var(--teal)',감사은혜:'var(--pink)'};
   const cc = document.getElementById('cat-chart');
   if (cc) cc.innerHTML = cats.map(c => {
     const gs = state.goals.filter(g => g.cat === c);
     const v = gs.length ? Math.round(gs.reduce((s,g)=>s+Math.min(100,g.current/g.target*100),0)/gs.length) : 0;
     return '<div class="chart-row"><div class="chart-label">'+c+'</div><div class="chart-bg"><div class="chart-fill" style="width:'+v+'%;background:'+catFills[c]+'"></div></div><div class="chart-val">'+v+'%</div></div>';
   }).join('');
-  const dayNames = ['??,'??,'??,'紐?,'湲?,'??,'??];
+  const dayNames = ['월','화','수','목','금','토','일'];
   const wc = document.getElementById('week-chart');
   if (wc) wc.innerHTML = dayNames.map((d,i) => {
     const v = state.weekHistory[i] || 0;
     return '<div class="chart-row"><div class="chart-label">'+d+'</div><div class="chart-bg"><div class="chart-fill" style="width:'+v+'%;background:var(--blue)"></div></div><div class="chart-val">'+(v?v+'%':'-')+'</div></div>';
   }).join('');
-  const pl = {daily:'?쇨컙',weekly:'二쇨컙',monthly:'?붽컙',quarterly:'遺꾧린',yearly:'?곌컙'};
+  const pl = {daily:'일간',weekly:'주간',monthly:'월간',quarterly:'분기',yearly:'연간'};
   const pcc = {daily:'blue',weekly:'teal',monthly:'purple',quarterly:'amber',yearly:'coral'};
   const st = document.getElementById('stat-table');
   if (st) st.innerHTML = state.goals.map(g => {
@@ -394,17 +395,17 @@ function renderCoach() {
   if (!el) return;
   const pct = getCompletionPct();
   const undone = state.goals.filter(g => g.current/g.target < 1);
-  let msg = '?덈뀞?섏꽭?? ';
-  if (pct===100) msg += '?ㅻ뒛 猷⑦떞??紐⑤몢 ?꾨즺?섏뀲?댁슂! ??⑦빀?덈떎! ?럦';
-  else if (pct>=60) msg += '?ㅻ뒛 '+pct+'% ?ъ꽦 以묒씠?먯슂. 議곌툑留??? ?뮞';
-  else msg += '?ㅻ뒛 猷⑦떞???쒖옉??蹂댁꽭??';
-  if (state.streak>0) msg += ' <strong>'+state.streak+'???곗냽</strong> ?ъ꽦 以?';
-  const strategies = {daily:'?ㅻ뒛 ???ъ꽦!',weekly:'?대쾲 二??덉뿉 ?ъ꽦??蹂댁꽭??',monthly:'?대떖 ?덉뿉 ?ъ꽦??蹂댁꽭??',quarterly:'袁몄???吏꾪뻾??蹂댁꽭??',yearly:'吏湲??쒖옉??以묒슂?⑸땲??'};
-  el.innerHTML = '<div class="coach-box"><div class="coach-header"><div class="coach-avatar"><i class="ti ti-robot"></i></div><div><div class="coach-name">AI 肄붿튂</div></div></div><div class="coach-msg">'+msg+'</div>'
+  let msg = '안녕하세요! ';
+  if (pct===100) msg += '오늘 루틴을 모두 완료하셨어요! 대단합니다! 🎉';
+  else if (pct>=60) msg += '오늘 '+pct+'% 달성 중이에요. 조금만 더! 💪';
+  else msg += '오늘 루틴을 시작해 보세요!';
+  if (state.streak>0) msg += ' <strong>'+state.streak+'일 연속</strong> 달성 중!';
+  const strategies = {daily:'오늘 내 달성!',weekly:'이번 주 안에 달성해 보세요.',monthly:'이달 안에 달성해 보세요.',quarterly:'꾸준히 진행해 보세요.',yearly:'지금 시작이 중요합니다.'};
+  el.innerHTML = '<div class="coach-box"><div class="coach-header"><div class="coach-avatar"><i class="ti ti-robot"></i></div><div><div class="coach-name">AI 코치</div></div></div><div class="coach-msg">'+msg+'</div>'
     +undone.slice(0,3).map(g=>'<div class="coach-tip"><i class="ti ti-bulb"></i> '+g.name+': '+(strategies[g.period]||'')+'</div>').join('')+'</div>'
-    +'<div class="section-title"><i class="ti ti-heart"></i> ?낅젮 硫붿떆吏</div>'
-    +'<div class="encourage-item"><div class="encourage-icon" style="background:var(--coral-bg)"><i class="ti ti-flame" style="color:var(--coral)"></i></div><div style="font-size:13px;line-height:1.55">?묒? ?듦???紐⑥뿬 ??蹂?붾? 留뚮벊?덈떎. '+(state.streak||0)+'???곗냽 ?ъ꽦 以묒씤 ?뱀떊???먮옉?ㅻ윭?뚯슂!</div></div>'
-    +'<div class="encourage-item"><div class="encourage-icon" style="background:var(--green-bg)"><i class="ti ti-heart" style="color:var(--green)"></i></div><div style="font-size:13px;line-height:1.55">?ㅻ뒛 ?섎（???댁젣蹂대떎 議곌툑 ???섏? ?닿? ?섍퀬 ?덉뒿?덈떎!</div></div>';
+    +'<div class="section-title"><i class="ti ti-heart"></i> 독려 메시지</div>'
+    +'<div class="encourage-item"><div class="encourage-icon" style="background:var(--coral-bg)"><i class="ti ti-flame" style="color:var(--coral)"></i></div><div style="font-size:13px;line-height:1.55">작은 습관이 모여 큰 변화를 만듭니다. '+(state.streak||0)+'일 연속 달성 중인 당신이 자랑스러워요!</div></div>'
+    +'<div class="encourage-item"><div class="encourage-icon" style="background:var(--green-bg)"><i class="ti ti-heart" style="color:var(--green)"></i></div><div style="font-size:13px;line-height:1.55">오늘 하루도 어제보다 조금 더 나은 내가 되고 있습니다!</div></div>';
 }
 
 function renderAlerts() {
@@ -412,11 +413,11 @@ function renderAlerts() {
   if (!el) return;
   const ts = {warning:{icon:'ti-alert-triangle',color:'amber'},info:{icon:'ti-info-circle',color:'blue'},danger:{icon:'ti-alert-circle',color:'coral'},success:{icon:'ti-circle-check',color:'green'}};
   const all = [...state.alerts.filter(a=>!a.read),...state.alerts.filter(a=>a.read)];
-  el.innerHTML = !all.length ? '<div style="text-align:center;color:var(--t3);padding:40px">?뚮┝???놁뒿?덈떎</div>'
+  el.innerHTML = !all.length ? '<div style="text-align:center;color:var(--t3);padding:40px">알림이 없습니다</div>'
     : all.map(a => {
         const s = ts[a.type]||ts.info;
         return '<div class="notif-item '+(a.read?'read':'')+'"><div class="notif-icon" style="background:var(--'+s.color+'-bg)"><i class="ti '+s.icon+'" style="color:var(--'+s.color+')"></i></div><div class="notif-body"><div class="notif-title">'+a.title+'</div><div class="notif-msg">'+a.msg+'</div><div class="notif-time">'+a.time+'</div></div>'
-          +(!a.read?'<button class="btn-outline" style="font-size:11px;align-self:flex-start" onclick="markRead('+a.id+')">?쎌쓬</button>':'')+'</div>';
+          +(!a.read?'<button class="btn-outline" style="font-size:11px;align-self:flex-start" onclick="markRead('+a.id+')">읽음</button>':'')+'</div>';
       }).join('');
   updateAlertBadge();
 }
@@ -425,27 +426,27 @@ function renderSettings() {
   const el = document.getElementById('settings-content');
   if (!el) return;
   const activeTab = window._settingsTab || 's-routine';
-  const tabs = [{id:'s-routine',label:'猷⑦떞',icon:'ti-layout-list'},{id:'s-goals',label:'紐⑺몴',icon:'ti-trophy'},{id:'s-general',label:'?쇰컲',icon:'ti-settings'}];
-  const catColor = {嫄닿컯:'green',?숈뒿:'blue',?ъ젙:'amber',愿怨?'coral',?먭린怨꾨컻:'purple',?낅Т:'teal',媛먯궗???'pink'};
-  const pl = {daily:'?쇨컙',weekly:'二쇨컙',monthly:'?붽컙',quarterly:'遺꾧린',yearly:'?곌컙'};
+  const tabs = [{id:'s-routine',label:'루틴',icon:'ti-layout-list'},{id:'s-goals',label:'목표',icon:'ti-trophy'},{id:'s-general',label:'일반',icon:'ti-settings'}];
+  const catColor = {건강:'green',학습:'blue',재정:'amber',관계:'coral',자기계발:'purple',업무:'teal',감사은혜:'pink'};
+  const pl = {daily:'일간',weekly:'주간',monthly:'월간',quarterly:'분기',yearly:'연간'};
   const pc = {daily:'blue',weekly:'teal',monthly:'purple',quarterly:'amber',yearly:'coral'};
   let body = '';
   if (activeTab==='s-routine') {
-    body = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-weight:500">猷⑦떞 ('+state.tasks.length+'媛?</div><button class="btn-primary" onclick="openModal(\'task\')"><i class="ti ti-plus"></i> 異붽?</button></div>'
+    body = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-weight:500">루틴 ('+state.tasks.length+'개)</div><button class="btn-primary" onclick="openModal(\'task\')"><i class="ti ti-plus"></i> 추가</button></div>'
       + state.tasks.slice().sort((a,b)=>a.time.localeCompare(b.time)).map(t => {
           const cc = catColor[t.cat]||'blue';
           return '<div class="task-item"><div class="task-body"><div class="task-name">'+t.name+'</div><div class="task-meta"><span class="badge '+cc+'" style="font-size:10px;padding:1px 6px">'+t.cat+'</span> '+t.time+'</div></div><div class="task-actions"><button class="btn-icon" onclick="openEditTask('+t.id+')"><i class="ti ti-edit" style="font-size:14px"></i></button><button class="btn-icon" onclick="deleteTask('+t.id+')"><i class="ti ti-trash" style="font-size:14px"></i></button></div></div>';
         }).join('');
   } else if (activeTab==='s-goals') {
-    body = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-weight:500">紐⑺몴 ('+state.goals.length+'媛?</div><button class="btn-primary" onclick="openModal(\'goal\')"><i class="ti ti-plus"></i> 異붽?</button></div>'
+    body = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-weight:500">목표 ('+state.goals.length+'개)</div><button class="btn-primary" onclick="openModal(\'goal\')"><i class="ti ti-plus"></i> 추가</button></div>'
       + state.goals.map(g => {
           const pct = Math.min(100,Math.round(g.current/g.target*100));
           return '<div class="goal-row"><div class="goal-header"><div style="flex:1"><span class="badge '+(pc[g.period]||'blue')+'" style="font-size:10px">'+pl[g.period]+'</span> <span style="font-weight:500">'+g.name+'</span></div><div class="goal-actions"><span style="font-size:13px;font-weight:500;color:var(--amber)">'+pct+'%</span><button class="btn-icon" onclick="openProgress('+g.id+')"><i class="ti ti-edit" style="font-size:14px"></i></button><button class="btn-icon" onclick="deleteGoal('+g.id+')"><i class="ti ti-trash" style="font-size:14px"></i></button></div></div><div class="goal-sub">'+g.current+'/'+g.target+g.unit+'</div><div class="progress-bar" style="height:5px"><div class="progress-fill" style="width:'+pct+'%;background:var(--blue)"></div></div></div>';
         }).join('');
   } else {
-    body = '<div class="card"><div class="card-title">?곗냽 ?ъ꽦???ㅼ젙</div><div style="display:flex;gap:8px;margin-top:8px"><input id="streak-input" class="form-input" type="number" value="'+(state.streak||0)+'" min="0" style="width:100px"/><button class="btn-primary" onclick="saveStreak()">???/button></div></div>'
-      +'<div class="card"><div class="card-title" style="color:var(--red)">?ㅻ뒛 猷⑦떞 珥덇린??/div><div style="font-size:13px;color:var(--t2);margin:8px 0">?ㅻ뒛 ?꾨즺 ?곹깭瑜?珥덇린?뷀빀?덈떎</div><button class="btn-outline" style="border-color:var(--red);color:var(--red)" onclick="resetTodayTasks()"><i class="ti ti-refresh"></i> 珥덇린??/button></div>'
-      +'<div class="card"><div class="card-title">濡쒓렇???뺣낫</div><div style="font-size:13px;color:var(--t2);margin-top:8px">'+(currentUser?currentUser.email:'')+'</div><button class="btn-outline" style="margin-top:10px" onclick="signOut()"><i class="ti ti-logout"></i> 濡쒓렇?꾩썐</button></div>';
+    body = '<div class="card"><div class="card-title">연속 달성일 설정</div><div style="display:flex;gap:8px;margin-top:8px"><input id="streak-input" class="form-input" type="number" value="'+(state.streak||0)+'" min="0" style="width:100px"/><button class="btn-primary" onclick="saveStreak()">저장</button></div></div>'
+      +'<div class="card"><div class="card-title" style="color:var(--red)">오늘 루틴 초기화</div><div style="font-size:13px;color:var(--t2);margin:8px 0">오늘 완료 상태를 초기화합니다</div><button class="btn-outline" style="border-color:var(--red);color:var(--red)" onclick="resetTodayTasks()"><i class="ti ti-refresh"></i> 초기화</button></div>'
+      +'<div class="card"><div class="card-title">로그인 정보</div><div style="font-size:13px;color:var(--t2);margin-top:8px">'+(currentUser?currentUser.email:'')+'</div><button class="btn-outline" style="margin-top:10px" onclick="signOut()"><i class="ti ti-logout"></i> 로그아웃</button></div>';
   }
   el.innerHTML = '<div class="tag-row" style="margin-bottom:14px">'+tabs.map(t=>'<button class="period-tag '+(activeTab===t.id?'active':'')+'" onclick="window._settingsTab=\''+t.id+'\';renderSettings()"><i class="ti '+t.icon+'" style="font-size:12px;margin-right:3px"></i>'+t.label+'</button>').join('')+'</div>'+body;
 }
@@ -456,7 +457,7 @@ window.saveStreak = function() {
 };
 
 window.resetTodayTasks = function() {
-  if (!confirm('珥덇린?뷀븷源뚯슂?')) return;
+  if (!confirm('초기화할까요?')) return;
   state.tasks.forEach(t => t.done = false);
   saveData(); renderRoutineSections(); renderSettings();
 };
@@ -473,7 +474,7 @@ window.clearAlerts = function() {
 };
 
 function addAlert(type, title, msg) {
-  state.alerts.unshift({id:state.nextId++,type,title,msg,time:'諛⑷툑',read:false});
+  state.alerts.unshift({id:state.nextId++,type,title,msg,time:'방금',read:false});
   saveData(); updateAlertBadge();
 }
 
@@ -511,11 +512,11 @@ window.addTask = function() {
 window.addGoal = function() {
   const name = document.getElementById('goal-name').value.trim();
   if (!name) return;
-  state.goals.push({id:state.nextId++,name,period:document.getElementById('goal-period').value,target:parseFloat(document.getElementById('goal-target').value)||1,current:0,unit:document.getElementById('goal-unit').value.trim()||'媛?,cat:document.getElementById('goal-cat').value,deadline:document.getElementById('goal-deadline').value});
+  state.goals.push({id:state.nextId++,name,period:document.getElementById('goal-period').value,target:parseFloat(document.getElementById('goal-target').value)||1,current:0,unit:document.getElementById('goal-unit').value.trim()||'개',cat:document.getElementById('goal-cat').value,deadline:document.getElementById('goal-deadline').value});
   saveData(); closeModal('goal');
   ['goal-name','goal-target','goal-unit','goal-deadline'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   renderGoals();
-  addAlert('info','??紐⑺몴 異붽???,'\''+name+'\' 紐⑺몴媛 異붽??섏뿀?듬땲??');
+  addAlert('info','새 목표 추가됨','\''+name+'\' 목표가 추가되었습니다!');
 };
 
 window.openProgress = function(id) {
@@ -523,7 +524,7 @@ window.openProgress = function(id) {
   const g = state.goals.find(g => g.id===id);
   if (!g) return;
   document.getElementById('progress-goal-name').textContent = g.name;
-  document.getElementById('progress-goal-info').textContent = '?꾩옱: '+g.current+g.unit+' / 紐⑺몴: '+g.target+g.unit;
+  document.getElementById('progress-goal-info').textContent = '현재: '+g.current+g.unit+' / 목표: '+g.target+g.unit;
   document.getElementById('progress-val').value = g.current;
   openModal('progress');
 };
@@ -534,7 +535,7 @@ window.saveProgress = function() {
   if (!g) return;
   const val = parseFloat(document.getElementById('progress-val').value);
   if (isNaN(val)||val<0) return;
-  if (val >= g.target && g.current < g.target) addAlert('success','紐⑺몴 ?ъ꽦! ?럦','\''+g.name+'\' 紐⑺몴瑜??ъ꽦?덉뒿?덈떎!');
+  if (val >= g.target && g.current < g.target) addAlert('success','목표 달성! 🎉','\''+g.name+'\' 목표를 달성했습니다!');
   g.current = val;
   saveData(); closeModal('progress');
   renderGoals(); renderStats();
