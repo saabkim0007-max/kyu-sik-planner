@@ -97,7 +97,7 @@ onAuthStateChanged(auth, async (user) => {
         alert('PC 동기화 ID:\n' + uid);
       }
     };
-    document.getElementById('page-login').classList.remove('active');
+    document.getElementById('page-login').style.display = 'none';
     document.getElementById('page-today').classList.add('active');
     await loadFromFirebase();
     listenFirebase();
@@ -107,8 +107,8 @@ onAuthStateChanged(auth, async (user) => {
     currentUser = null;
     const loginArea = document.getElementById('firebase-login-area');
     if (loginArea) loginArea.innerHTML = '';
-    document.getElementById('page-login').classList.add('active');
-    document.querySelectorAll('.page:not(#page-login)').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-login').style.display = 'flex';
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   }
 });
 
