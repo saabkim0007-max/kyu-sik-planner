@@ -70,7 +70,16 @@ export async function signOut() {
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
-    document.getElementById('user-info').innerHTML = `<span title="PC 동기화 ID: ${user.uid}" style="cursor:pointer;text-decoration:underline dotted" onclick="navigator.clipboard.writeText('${user.uid}').then(()=>alert('PC 동기화 ID 복사완료!\nPC앱에서 클라우드 동기화 버튼 누르고 붙여넣기 하세요.'))">${user.displayName || user.email} 🔗</span>`;
+    window._currentUid = user.uid;
+    document.getElementById('user-info').innerHTML = '<button onclick="window._copyUid()" style="background:none;border:none;color:inherit;cursor:pointer;font-size:inherit;padding:0;text-decoration:underline dotted;">' + (user.displayName || user.email) + ' 🔗</button>';
+    window._copyUid = function() {
+      var uid = window._currentUid;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(uid).then(function() { alert('PC 동기화 ID 복사완료!\n\nPC앱 클라우드 동기화 버튼 누르고 붙여넣기!\n\nID: ' + uid); });
+      } else {
+        alert('PC 동기화 ID:\n' + uid);
+      }
+    };
     document.getElementById('page-login').classList.remove('active');
     document.getElementById('page-today').classList.add('active');
     await loadFromFirebase();
