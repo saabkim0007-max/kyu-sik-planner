@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut as fbSignOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -23,7 +23,7 @@ let unsubscribe = null;
 window.signInWithGoogle = async function() {
   const provider = new GoogleAuthProvider();
   try {
-    await signInWithPopup(auth, provider);
+    await signInWithRedirect(auth, provider);
   } catch(e) {
     alert('로그인 실패: ' + e.message);
   }
@@ -76,6 +76,9 @@ function listenFirebase() {
     }
   });
 }
+
+// 리디렉션 결과 처리
+getRedirectResult(auth).catch(e => console.log('redirect:', e));
 
 // 인증 상태 감지
 onAuthStateChanged(auth, async (user) => {
